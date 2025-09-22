@@ -5,12 +5,11 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/client/" />
-  <Folder Name="/client/Core/">
-    <Project Path="client/Core/LightingProxy.Core.Client/LightingProxy.Core.Client.csproj" Id="d2a9a687-e819-45e6-ad7f-8a6a23440df5" />
-    <Project Path="client/Core/LightingProxy.Core.Server/LightingProxy.Core.Server.csproj" Id="d6d3bf4c-23eb-4eeb-94a2-d0c6c5c8f5f6" />
-  </Folder>
+  <Folder Name="/client/Core/" />
   <Folder Name="/client/Mobile/">
-    <Project Path="client/Mobile/LightingProxy.Mobile.Client/LightingProxy.Mobile.Client.csproj" Id="8e985793-56e8-407c-a140-b376aea73fae" />
+    <Project Path="client/Mobile/LightingProxy.Mobile.Client/LightingProxy.Mobile.Client.csproj" Id="8e985793-56e8-407c-a140-b376aea73fae">
+      <Deploy Solution="Debug|x64" />
+    </Project>
   </Folder>
   <Folder Name="/client/Web/">
     <Project Path="client/LightingProxy.Web.Server/LightingProxy.Web.Server.csproj" Id="feb83bc3-6991-4ebf-bf78-7caefe0b6a01" />
@@ -30,6 +29,10 @@
       <Deploy />
     </Project>
   </Folder>
-  <Folder Name="/src/" />
+  <Folder Name="/src/">
+    <Project Path="src/LightingProxy.Core/LightingProxy.Core.csproj" Id="7fe457e3-8f96-4739-9cf1-641def40b11d" />
+    <Project Path="src/LightingProxy.Domain/LightingProxy.Domain.csproj" Id="adf98691-14a6-4ed4-a9d0-c497484d36af" />
+    <Project Path="src/LightingProxy.Extension/LightingProxy.Extension.csproj" Id="ebfe76f0-300d-45b4-9405-5c2cda36ac5a" />
+  </Folder>
   <Folder Name="/test/" />
 </Solution>
