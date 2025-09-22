@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "LightingProxy.Windows.Client (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "LightingProxy.Windows.Client (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
