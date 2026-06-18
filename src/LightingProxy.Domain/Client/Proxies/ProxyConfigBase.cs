@@ -13,6 +13,7 @@ namespace LightingProxy.Domain.Client.Proxies;
 [JsonDerivedType(typeof(XtcpProxyConfig), "xtcp")]
 [JsonDerivedType(typeof(Socks5ProxyConfig), "socks5")]
 [JsonDerivedType(typeof(TcpmuxProxyConfig), "tcpmux")]
+[JsonDerivedType(typeof(KcpProxyConfig), "kcp")]
 public abstract class ProxyConfigBase
 {
     public required string Name { get; set; }

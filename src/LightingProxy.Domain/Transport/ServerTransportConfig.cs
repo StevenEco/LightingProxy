@@ -1,4 +1,5 @@
 using LightingProxy.Domain.Common;
+using LightingProxy.Domain.Enums;
 
 namespace LightingProxy.Domain.Transport;
 
@@ -12,5 +13,7 @@ public class ServerTransportConfig
 
     public int TcpMuxKeepaliveIntervalSeconds { get; set; } = 30;
 
-    public TlsConfig? Tls { get; set; }
+    public TlsConfig Tls { get; set; } = new();
+
+    public TransportEncryptionConfig Encryption { get; set; } = new();
 }

@@ -13,5 +13,7 @@ public class ClientTransportConfig
 
     public int HeartbeatTimeoutSeconds { get; set; } = 90;
 
-    public TlsConfig? Tls { get; set; }
+    public TlsConfig Tls { get; set; } = new();
+
+    public TransportEncryptionConfig Encryption { get; set; } = new();
 }

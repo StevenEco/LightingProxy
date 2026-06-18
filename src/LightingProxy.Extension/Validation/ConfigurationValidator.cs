@@ -23,6 +23,7 @@ public static class ConfigurationValidator
 
         ValidateAuth(config.Auth, "server", errors);
         ValidateLog(config.Log, "server", errors);
+        ValidateTransport(config.Transport, "server", errors);
 
         if (config.Transport.MaxPoolCount <= 0)
         {
@@ -55,7 +56,7 @@ public static class ConfigurationValidator
 
         ValidateAuth(config.Auth, "client", errors);
         ValidateLog(config.Log, "client", errors);
-        ValidateTransport(config.Transport, errors);
+        ValidateTransport(config.Transport, "client", errors);
 
         if (config.WebHost is not null)
         {
@@ -89,7 +90,22 @@ public static class ConfigurationValidator
         }
     }
 
-    private static void ValidateTransport(ClientTransportConfig transport, List<string> errors)
+    private static void ValidateTransport(ServerTransportConfig transport, string scope, List<string> errors)
+        => ValidateTransportCore(transport.Tls, transport.Encryption, scope, errors);
+
+    private static void ValidateTransportCore(
+        TlsConfig tls,
+        TransportEncryptionConfig encryption,
+        string scope,
+        List<string> errors)
+    {
+        if (tls.Enabled && !string.IsNullOrWhiteSpace(tls.CertFile) && string.IsNullOrWhiteSpace(tls.KeyFile))
+        {
+            errors.Add($"{scope} transport.tls.keyFile is required when transport.tls.certFile is set.");
+        }
+    }
+
+    private static void ValidateTransport(ClientTransportConfig transport, string scope, List<string> errors)
     {
         if (transport.PoolCount <= 0)
         {
@@ -110,6 +126,8 @@ public static class ConfigurationValidator
         {
             errors.Add("Client transport.heartbeatTimeoutSeconds must be greater than heartbeatIntervalSeconds.");
         }
+
+        ValidateTransportCore(transport.Tls, transport.Encryption, scope, errors);
     }
 
     private static void ValidateWebEndpoint(string address, ushort port, string scope, List<string> errors)

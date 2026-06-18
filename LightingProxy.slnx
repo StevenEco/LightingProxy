@@ -35,5 +35,7 @@
     <Project Path="src/LightingProxy.Extension/LightingProxy.Extension.csproj" Id="ebfe76f0-300d-45b4-9405-5c2cda36ac5a" />
     <Project Path="src/LightingProxy.Infrastructure/LightingProxy.Infrastructure.csproj" Id="c4a8f1e2-9b3d-4f6a-8c1e-2d7e9a4b5c6d" />
   </Folder>
-  <Folder Name="/test/" />
+  <Folder Name="/test/">
+    <Project Path="test/LightingProxy.Core.Tests/LightingProxy.Core.Tests.csproj" Id="d1e2f3a4-b5c6-7890-abcd-ef1234567890" />
+  </Folder>
 </Solution>

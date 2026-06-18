@@ -4,6 +4,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <InternalsVisibleTo>LightingProxy.Core.Tests</InternalsVisibleTo>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LightingProxy.Domain\LightingProxy.Domain.csproj" />
+  </ItemGroup>
 
 </Project>

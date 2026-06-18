@@ -115,7 +115,9 @@ internal static class IniConfigurationMapper
                 MaxPoolCount = IniValueReader.GetInt32(transport, 5, "max_pool_count", "maxPoolCount"),
                 TcpKeepAliveSeconds = IniValueReader.GetInt32(transport, 7200, "tcp_keep_alive", "tcpKeepAliveSeconds"),
                 TcpMux = IniValueReader.GetBoolean(transport, true, "tcp_mux", "tcpMux"),
-                TcpMuxKeepaliveIntervalSeconds = IniValueReader.GetInt32(transport, 30, "tcp_mux_keepalive_interval", "tcpMuxKeepaliveIntervalSeconds")
+                TcpMuxKeepaliveIntervalSeconds = IniValueReader.GetInt32(transport, 30, "tcp_mux_keepalive_interval", "tcpMuxKeepaliveIntervalSeconds"),
+                Tls = ParseTlsConfig(transport),
+                Encryption = ParseEncryptionConfig(transport)
             },
             Log = new LogConfig
             {
@@ -184,7 +186,9 @@ internal static class IniConfigurationMapper
                 Protocol = IniValueReader.GetEnum(transport, TransportProtocol.Tcp, "protocol"),
                 PoolCount = IniValueReader.GetInt32(transport, 1, "pool_count", "poolCount"),
                 HeartbeatIntervalSeconds = IniValueReader.GetInt32(transport, 30, "heartbeat_interval", "heartbeatIntervalSeconds"),
-                HeartbeatTimeoutSeconds = IniValueReader.GetInt32(transport, 90, "heartbeat_timeout", "heartbeatTimeoutSeconds")
+                HeartbeatTimeoutSeconds = IniValueReader.GetInt32(transport, 90, "heartbeat_timeout", "heartbeatTimeoutSeconds"),
+                Tls = ParseTlsConfig(transport),
+                Encryption = ParseEncryptionConfig(transport)
             },
             Log = new LogConfig
             {
@@ -535,6 +539,28 @@ internal static class IniConfigurationMapper
     private static bool HasAny(IDictionary<string, string> section, params string[] keys)
     {
         return keys.Any(key => section.ContainsKey(key) && !string.IsNullOrWhiteSpace(section[key]));
+    }
+
+    private static TlsConfig ParseTlsConfig(IDictionary<string, string> transport)
+        => new()
+        {
+            Enabled = IniValueReader.GetBoolean(transport, false, "tls_enable", "tlsEnable", "tls.enable"),
+            Force = IniValueReader.GetBoolean(transport, false, "tls_force", "tlsForce", "tls.force"),
+            CertFile = IniValueReader.Get(transport, "tls_cert_file", "tlsCertFile", "tls.certFile"),
+            KeyFile = IniValueReader.Get(transport, "tls_key_file", "tlsKeyFile", "tls.keyFile"),
+            TrustedCaFile = IniValueReader.Get(transport, "tls_trusted_ca_file", "tlsTrustedCaFile", "tls.trustedCaFile"),
+            ServerName = IniValueReader.Get(transport, "tls_server_name", "tlsServerName", "tls.serverName")
+        };
+
+    private static TransportEncryptionConfig ParseEncryptionConfig(IDictionary<string, string> transport)
+    {
+        var useEncryption = IniValueReader.GetBoolean(transport, false, "use_encryption", "useEncryption", "transport.useEncryption");
+        var method = IniValueReader.GetEnum(
+            transport,
+            useEncryption ? TransportEncryptionMethod.Aes128Cfb : TransportEncryptionMethod.None,
+            "encryption", "encryption_method", "encryptionMethod", "transport.encryption");
+
+        return new TransportEncryptionConfig { Method = method };
     }
 
     private static string? ToStringOrNull(ushort value) => value == 0 ? null : value.ToString();
