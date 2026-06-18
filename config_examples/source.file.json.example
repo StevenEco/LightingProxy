@@ -1,0 +1,8 @@
+{
+  "storage": "file",
+  "fileFormat": "json",
+  "filePath": "config_examples/server.json",
+  "targetKind": "server",
+  "name": "default",
+  "validate": true
+}

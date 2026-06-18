@@ -1,0 +1,37 @@
+{
+  "bindAddress": "0.0.0.0",
+  "bindPort": 7000,
+  "proxyBindAddress": "0.0.0.0",
+  "kcpBindPort": 7000,
+  "quicBindPort": 7002,
+  "vhost": {
+    "httpPort": 80,
+    "httpsPort": 443,
+    "tcpmuxHttpConnectPort": 1337
+  },
+  "auth": {
+    "method": "token",
+    "token": "your_token_here"
+  },
+  "transport": {
+    "maxPoolCount": 5,
+    "tcpKeepAliveSeconds": 7200,
+    "tcpMux": true,
+    "tcpMuxKeepaliveIntervalSeconds": 30,
+    "tls": {
+      "enabled": false,
+      "force": false
+    }
+  },
+  "webServer": {
+    "address": "127.0.0.1",
+    "port": 7500,
+    "user": "admin",
+    "password": "admin"
+  },
+  "log": {
+    "target": "console",
+    "level": "info",
+    "maxDays": 3
+  }
+}

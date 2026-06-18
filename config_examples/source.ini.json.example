@@ -1,0 +1,8 @@
+{
+  "storage": "file",
+  "fileFormat": "ini",
+  "filePath": "config_examples/client.ini",
+  "targetKind": "client",
+  "name": "default",
+  "validate": true
+}

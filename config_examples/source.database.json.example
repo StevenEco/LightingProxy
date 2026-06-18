@@ -1,0 +1,10 @@
+{
+  "storage": "database",
+  "name": "default",
+  "validate": true,
+  "database": {
+    "provider": "sqlite",
+    "connectionString": "Data Source=lightingproxy.db",
+    "autoCreateDatabase": true
+  }
+}

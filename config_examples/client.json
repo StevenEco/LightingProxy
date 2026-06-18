@@ -1,0 +1,108 @@
+{
+  "serverAddress": "127.0.0.1",
+  "serverPort": 7000,
+  "user": "",
+  "auth": {
+    "method": "token",
+    "token": "your_token_here"
+  },
+  "transport": {
+    "protocol": "tcp",
+    "poolCount": 1,
+    "heartbeatIntervalSeconds": 30,
+    "heartbeatTimeoutSeconds": 90,
+    "tls": {
+      "enabled": false
+    }
+  },
+  "webHost": {
+    "address": "127.0.0.1",
+    "port": 7400
+  },
+  "log": {
+    "target": "console",
+    "level": "info",
+    "maxDays": 3
+  },
+  "proxies": [
+    {
+      "type": "tcp",
+      "name": "ssh",
+      "localAddress": "127.0.0.1",
+      "localPort": 22,
+      "remotePort": 6000,
+      "enabled": true
+    },
+    {
+      "type": "udp",
+      "name": "dns",
+      "localAddress": "127.0.0.1",
+      "localPort": 53,
+      "remotePort": 6001
+    },
+    {
+      "type": "http",
+      "name": "web",
+      "localAddress": "127.0.0.1",
+      "localPort": 80,
+      "customDomains": ["www.example.com"],
+      "subDomain": "web",
+      "hostHeaderRewrite": "127.0.0.1"
+    },
+    {
+      "type": "https",
+      "name": "web-https",
+      "localAddress": "127.0.0.1",
+      "localPort": 443,
+      "customDomains": ["secure.example.com"]
+    },
+    {
+      "type": "stcp",
+      "name": "secret-ssh",
+      "localAddress": "127.0.0.1",
+      "localPort": 22,
+      "secretKey": "abcdefg",
+      "allowUsers": ["user1"]
+    },
+    {
+      "type": "xtcp",
+      "name": "p2p-ssh",
+      "localAddress": "127.0.0.1",
+      "localPort": 22,
+      "secretKey": "abcdefg"
+    },
+    {
+      "type": "socks5",
+      "name": "socks5",
+      "localAddress": "127.0.0.1",
+      "localPort": 1080
+    },
+    {
+      "type": "tcpmux",
+      "name": "tcpmux-http",
+      "localAddress": "127.0.0.1",
+      "localPort": 8080,
+      "customDomains": ["mux.example.com"],
+      "multiplexer": "httpconnect"
+    }
+  ],
+  "visitors": [
+    {
+      "type": "stcp",
+      "name": "secret-ssh-visitor",
+      "serverName": "secret-ssh",
+      "secretKey": "abcdefg",
+      "bindAddress": "127.0.0.1",
+      "bindPort": 6002
+    },
+    {
+      "type": "xtcp",
+      "name": "p2p-ssh-visitor",
+      "serverName": "p2p-ssh",
+      "secretKey": "abcdefg",
+      "bindAddress": "127.0.0.1",
+      "bindPort": 6003,
+      "keepTunnelOpen": false
+    }
+  ]
+}
