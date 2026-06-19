@@ -12,6 +12,7 @@
   </Folder>
   <Folder Name="/src/client/" />
   <Folder Name="/src/client/CLI/">
+    <Project Path="src/client/CLI/LightingProxy.CLI.Shared/LightingProxy.CLI.Shared.csproj" />
     <Project Path="src/client/CLI/LightingProxy.Client.CLI/LightingProxy.Client.CLI.csproj" />
     <Project Path="src/client/CLI/LightingProxy.Server.CLI/LightingProxy.Server.CLI.csproj" />
   </Folder>

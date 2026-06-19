@@ -1,1 +1,3 @@
-﻿Console.WriteLine("Hello, World!");
+﻿using LightingProxy.CLI.Shared;
+
+return await ClientCliHost.RunAsync(args);
