@@ -4,6 +4,7 @@ using LightingProxy.Core.Abstractions;
 using LightingProxy.Core.Protocol;
 using LightingProxy.Core.Proxies;
 using LightingProxy.Core.Transport;
+using LightingProxy.Core.Telemetry;
 using LightingProxy.Domain.Client;
 using LightingProxy.Domain.Client.Proxies;
 using LightingProxy.Domain.Client.Visitors;
@@ -24,6 +25,16 @@ public sealed class ProxyClient : IAsyncDisposable
 
     public Task ReadyTask => _readyTcs.Task;
 
+    public ProxyRuntimeTracker Runtime { get; } = new();
+
+    public ProxyConnectionState ConnectionState { get; private set; } = ProxyConnectionState.Stopped;
+
+    public DateTimeOffset? ConnectedAt { get; private set; }
+
+    public DateTimeOffset? LastHeartbeatUtc { get; private set; }
+
+    public event EventHandler<ProxyConnectionState>? ConnectionStateChanged;
+
     public ProxyClient(ClientConfig config, ProxyHandlerRegistry? registry = null)
     {
         _config = config;
@@ -35,6 +46,10 @@ public sealed class ProxyClient : IAsyncDisposable
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cts.Token);
         var token = linked.Token;
 
+        SetConnectionState(ProxyConnectionState.Starting);
+
+        try
+        {
         _controlSocket = await NetworkHelper.ConnectTcpAsync(_config.ServerAddress, _config.ServerPort, token).ConfigureAwait(false);
         var networkStream = NetworkHelper.CreateNetworkStream(_controlSocket, ownsSocket: false);
         _controlStream = await TransportStreamFactory.WrapClientAsync(
@@ -62,10 +77,32 @@ public sealed class ProxyClient : IAsyncDisposable
         heartbeat.Reset();
 
         _readyTcs.TrySetResult();
+        ConnectedAt = DateTimeOffset.UtcNow;
+        LastHeartbeatUtc = ConnectedAt;
+        SetConnectionState(ProxyConnectionState.Connected);
 
         await Task.WhenAll(
             heartbeat.RunAsync(token),
             ListenControlAsync(token, heartbeat)).ConfigureAwait(false);
+        }
+        catch
+        {
+            SetConnectionState(ProxyConnectionState.Faulted);
+            throw;
+        }
+        finally
+        {
+            if (ConnectionState == ProxyConnectionState.Connected)
+            {
+                SetConnectionState(ProxyConnectionState.Stopped);
+            }
+        }
+    }
+
+    private void SetConnectionState(ProxyConnectionState state)
+    {
+        ConnectionState = state;
+        ConnectionStateChanged?.Invoke(this, state);
     }
 
     private async Task SendPingAsync(CancellationToken cancellationToken)
@@ -166,6 +203,7 @@ public sealed class ProxyClient : IAsyncDisposable
                         visitor.ServerName,
                         visitor.SecretKey,
                         OpenVisitorTunnelAsync,
+                        Runtime,
                         _cts.Token);
                     break;
                 case XtcpVisitorConfig:
@@ -174,6 +212,7 @@ public sealed class ProxyClient : IAsyncDisposable
                         visitor.ServerName,
                         visitor.SecretKey,
                         OpenVisitorTunnelAsync,
+                        Runtime,
                         _cts.Token);
                     break;
             }
@@ -194,6 +233,7 @@ public sealed class ProxyClient : IAsyncDisposable
             {
                 case MessageType.Pong:
                     heartbeat.NotifyPongReceived();
+                    LastHeartbeatUtc = DateTimeOffset.UtcNow;
                     break;
                 case MessageType.ReqWorkConn when message.ProxyName is not null:
                     _ = HandleWorkConnectionRequestAsync(message, cancellationToken);
@@ -221,7 +261,7 @@ public sealed class ProxyClient : IAsyncDisposable
             }
 
             var handler = _registry.Get(definition.Protocol);
-            var context = new ClientProxyContext(_config.ServerAddress, _config.ServerPort);
+            var context = new ClientProxyContext(_config.ServerAddress, _config.ServerPort, Runtime);
             await handler.HandleClientWorkConnectionAsync(definition, workStream, context, cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -279,15 +319,18 @@ public sealed class ProxyClient : IAsyncDisposable
 
 internal sealed class ClientProxyContext : IClientProxyContext
 {
-    public ClientProxyContext(string serverAddress, int serverPort)
+    public ClientProxyContext(string serverAddress, int serverPort, ProxyRuntimeTracker runtime)
     {
         ServerAddress = serverAddress;
         ServerPort = serverPort;
+        Runtime = runtime;
     }
 
     public string ServerAddress { get; }
 
     public int ServerPort { get; }
+
+    public ProxyRuntimeTracker Runtime { get; }
 
     public Task<Stream> OpenWorkConnectionAsync(CancellationToken cancellationToken = default)
         => throw new NotSupportedException("Work connection is already established.");

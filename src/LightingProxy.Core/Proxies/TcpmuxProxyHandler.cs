@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using LightingProxy.Core.Abstractions;
+using LightingProxy.Core.Telemetry;
 using LightingProxy.Core.Transport;
 using LightingProxy.Domain.Client.Proxies;
 using LightingProxy.Domain.Enums;
@@ -28,7 +29,7 @@ public sealed class TcpmuxProxyHandler : IProxyHandler
     public async Task HandleClientWorkConnectionAsync(ProxyDefinition definition, Stream workStream, IClientProxyContext context, CancellationToken cancellationToken = default)
     {
         await using var local = await TcpProxyHandler.OpenLocalStreamAsync(definition.Config, cancellationToken).ConfigureAwait(false);
-        await StreamRelay.RelayBidirectionalAsync(workStream, local, cancellationToken).ConfigureAwait(false);
+        await TrafficRelay.BidirectionalAsync(context.Runtime, definition.Name, workStream, local, cancellationToken).ConfigureAwait(false);
     }
 
     internal static async Task RunTcpmuxListenerAsync(

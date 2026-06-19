@@ -26,6 +26,7 @@
     <Project Path="src/client/Web/LightingProxy.Web.Client/LightingProxy.Web.Client.csproj" Id="dc05e52d-a763-4e69-8285-2cd838c676d7" />
   </Folder>
   <Folder Name="/src/client/Windows/">
+    <Project Path="src/client/Windows/LightingProxy.Windows.Shared/LightingProxy.Windows.Shared.csproj" />
     <Project Path="src/client/Windows/LightingProxy.Windows.Client/LightingProxy.Windows.Client.csproj" Id="4ddfe861-7571-47fa-a0d7-4335bf5b09f1">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

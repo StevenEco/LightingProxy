@@ -3,17 +3,25 @@
     x:Class="LightingProxy.Windows.Client.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:LightingProxy.Windows.Client"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Title="LightingProxy.Windows.Client">
+    Title="LightingProxy 客户端">
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
     <Grid>
+        <NavigationView
+            x:Name="NavView"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            PaneDisplayMode="Left"
+            SelectionChanged="NavView_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="概览" Tag="dashboard" Icon="Home" />
+                <NavigationViewItem Content="配置" Tag="config" Icon="Setting" />
+            </NavigationView.MenuItems>
 
+            <Frame x:Name="ContentFrame" />
+        </NavigationView>
     </Grid>
 </Window>

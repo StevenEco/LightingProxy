@@ -5,6 +5,7 @@ using LightingProxy.Core.Abstractions;
 using LightingProxy.Core.Protocol;
 using LightingProxy.Core.Proxies;
 using LightingProxy.Core.Transport;
+using LightingProxy.Core.Telemetry;
 using LightingProxy.Domain.Enums;
 using LightingProxy.Domain.Server;
 
@@ -21,6 +22,8 @@ public sealed class ProxyServer : IAsyncDisposable
     private Task? _httpsTask;
     private Task? _tcpmuxTask;
 
+    private Task? _acceptLoopTask;
+
     public ProxyServer(ServerConfig config, ProxyHandlerRegistry? registry = null)
     {
         _config = config;
@@ -29,19 +32,59 @@ public sealed class ProxyServer : IAsyncDisposable
 
     public int Port => _config.BindPort;
 
+    public ProxyConnectionState ConnectionState { get; private set; } = ProxyConnectionState.Stopped;
+
+    public DateTimeOffset? StartedAt { get; private set; }
+
+    public ProxyRuntimeTracker Runtime { get; } = new();
+
+    public IReadOnlyList<ClientSession> Sessions => _sessions;
+
+    public event EventHandler<ProxyConnectionState>? ConnectionStateChanged;
+
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cts.Token);
         var token = linked.Token;
 
-        _controlListener = NetworkHelper.CreateTcpListener(new IPEndPoint(IPAddress.Loopback, _config.BindPort));
-        StartSharedListeners(token);
+        SetConnectionState(ProxyConnectionState.Starting);
+        StartedAt = DateTimeOffset.UtcNow;
 
-        while (!token.IsCancellationRequested)
+        var bindIp = _config.BindAddress == "0.0.0.0"
+            ? IPAddress.Any
+            : IPAddress.Parse(_config.BindAddress);
+        _controlListener = NetworkHelper.CreateTcpListener(new IPEndPoint(bindIp, _config.BindPort));
+        StartSharedListeners(token);
+        SetConnectionState(ProxyConnectionState.Connected);
+
+        try
         {
-            var socket = await _controlListener.AcceptAsync(token).ConfigureAwait(false);
-            _ = HandleIncomingSocketAsync(socket, token);
+            while (!token.IsCancellationRequested)
+            {
+                var socket = await _controlListener.AcceptAsync(token).ConfigureAwait(false);
+                _ = HandleIncomingSocketAsync(socket, token);
+            }
         }
+        catch (OperationCanceledException)
+        {
+            // Server stopped.
+        }
+        finally
+        {
+            SetConnectionState(ProxyConnectionState.Stopped);
+        }
+    }
+
+    private void SetConnectionState(ProxyConnectionState state)
+    {
+        ConnectionState = state;
+        ConnectionStateChanged?.Invoke(this, state);
+    }
+
+    public async Task RunInBackgroundAsync(CancellationToken cancellationToken = default)
+    {
+        _acceptLoopTask = StartAsync(cancellationToken);
+        await _acceptLoopTask.ConfigureAwait(false);
     }
 
     public ClientSession? GetFirstSession() => _sessions.FirstOrDefault();
@@ -169,8 +212,14 @@ public sealed class ProxyServer : IAsyncDisposable
                 await MessageSerializer.WriteAsync(stream, MessageSerializer.CreateLoginResp(true), cancellationToken).ConfigureAwait(false);
                 var session = new ClientSession(socket, stream, _registry, _config);
                 _sessions.Add(session);
-                await session.RunAsync(cancellationToken).ConfigureAwait(false);
-                _sessions.Remove(session);
+                try
+                {
+                    await session.RunAsync(cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    _sessions.Remove(session);
+                }
             }
         }
     }

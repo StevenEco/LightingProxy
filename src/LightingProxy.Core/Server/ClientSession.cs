@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using LightingProxy.Core.Abstractions;
 using LightingProxy.Core.Protocol;
 using LightingProxy.Core.Proxies;
+using LightingProxy.Core.Telemetry;
 using LightingProxy.Domain.Client.Proxies;
 using LightingProxy.Domain.Enums;
 using LightingProxy.Domain.Server;
@@ -61,6 +62,8 @@ internal sealed class ServerProxyContext : IServerProxyContext, IWorkConnectionR
 
     public Task<Stream> RequestWorkConnectionAsync(string proxyName, Dictionary<string, string>? metadata = null, CancellationToken cancellationToken = default)
         => _session.OpenWorkConnectionAsync(proxyName, metadata, cancellationToken);
+
+    public ProxyRuntimeTracker Runtime => _session.Runtime;
 }
 
 public sealed class ClientSession
@@ -78,7 +81,13 @@ public sealed class ClientSession
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private DateTimeOffset _lastHeartbeatUtc = DateTimeOffset.UtcNow;
 
+    public string SessionId { get; } = Guid.NewGuid().ToString("N")[..8];
+
+    public DateTimeOffset ConnectedAt { get; } = DateTimeOffset.UtcNow;
+
     public DateTimeOffset LastHeartbeatUtc => _lastHeartbeatUtc;
+
+    public ProxyRuntimeTracker Runtime { get; } = new();
 
     public ClientSession(Socket controlSocket, Stream controlStream, ProxyHandlerRegistry registry, ServerConfig config)
     {

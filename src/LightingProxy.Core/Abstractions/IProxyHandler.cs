@@ -1,3 +1,4 @@
+using LightingProxy.Core.Telemetry;
 using LightingProxy.Domain.Client.Proxies;
 using LightingProxy.Domain.Enums;
 
@@ -49,6 +50,8 @@ public interface IServerProxyContext
     void RegisterTcpmuxRoute(string host, string proxyName);
 
     bool TryGetSecretProxy(string proxyName, string secretKey, out ProxyDefinition? definition);
+
+    ProxyRuntimeTracker Runtime { get; }
 }
 
 public interface IClientProxyContext
@@ -58,4 +61,6 @@ public interface IClientProxyContext
     int ServerPort { get; }
 
     Task<Stream> OpenWorkConnectionAsync(CancellationToken cancellationToken = default);
+
+    ProxyRuntimeTracker Runtime { get; }
 }

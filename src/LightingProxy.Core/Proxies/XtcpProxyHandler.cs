@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using LightingProxy.Core.Abstractions;
+using LightingProxy.Core.Telemetry;
 using LightingProxy.Core.Transport;
 using LightingProxy.Domain.Client.Proxies;
 using LightingProxy.Domain.Enums;
@@ -20,14 +21,15 @@ public sealed class XtcpProxyHandler : IProxyHandler
     public async Task HandleClientWorkConnectionAsync(ProxyDefinition definition, Stream workStream, IClientProxyContext context, CancellationToken cancellationToken = default)
     {
         await using var local = await TcpProxyHandler.OpenLocalStreamAsync(definition.Config, cancellationToken).ConfigureAwait(false);
-        await StreamRelay.RelayBidirectionalAsync(workStream, local, cancellationToken).ConfigureAwait(false);
+        await TrafficRelay.BidirectionalAsync(context.Runtime, definition.Name, workStream, local, cancellationToken).ConfigureAwait(false);
     }
 
-    internal static async Task RunVisitorAsync(
+    internal static Task RunVisitorAsync(
         IPEndPoint bindEndpoint,
         string serverName,
         string secretKey,
         Func<string, string, CancellationToken, Task<Stream>> visitorConnectionFactory,
+        ProxyRuntimeTracker runtime,
         CancellationToken cancellationToken)
-        => await StcpProxyHandler.RunVisitorAsync(bindEndpoint, serverName, secretKey, visitorConnectionFactory, cancellationToken).ConfigureAwait(false);
+        => StcpProxyHandler.RunVisitorAsync(bindEndpoint, serverName, secretKey, visitorConnectionFactory, runtime, cancellationToken);
 }

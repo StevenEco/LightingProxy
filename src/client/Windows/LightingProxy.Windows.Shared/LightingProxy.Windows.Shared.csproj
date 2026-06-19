@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>LightingProxy.Windows.Shared</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\LightingProxy.Core\LightingProxy.Core.csproj" />
+    <ProjectReference Include="..\..\..\LightingProxy.Domain\LightingProxy.Domain.csproj" />
+    <ProjectReference Include="..\..\..\LightingProxy.Extension\LightingProxy.Extension.csproj" />
+    <ProjectReference Include="..\..\..\LightingProxy.Infrastructure\LightingProxy.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

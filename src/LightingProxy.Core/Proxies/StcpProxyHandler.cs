@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using LightingProxy.Core.Abstractions;
+using LightingProxy.Core.Telemetry;
 using LightingProxy.Core.Transport;
 using LightingProxy.Domain.Client.Proxies;
 using LightingProxy.Domain.Enums;
@@ -20,7 +21,7 @@ public sealed class StcpProxyHandler : IProxyHandler
     public async Task HandleClientWorkConnectionAsync(ProxyDefinition definition, Stream workStream, IClientProxyContext context, CancellationToken cancellationToken = default)
     {
         await using var local = await TcpProxyHandler.OpenLocalStreamAsync(definition.Config, cancellationToken).ConfigureAwait(false);
-        await StreamRelay.RelayBidirectionalAsync(workStream, local, cancellationToken).ConfigureAwait(false);
+        await TrafficRelay.BidirectionalAsync(context.Runtime, definition.Name, workStream, local, cancellationToken).ConfigureAwait(false);
     }
 
     internal static async Task RunVisitorAsync(
@@ -28,6 +29,7 @@ public sealed class StcpProxyHandler : IProxyHandler
         string serverName,
         string secretKey,
         Func<string, string, CancellationToken, Task<Stream>> visitorConnectionFactory,
+        ProxyRuntimeTracker runtime,
         CancellationToken cancellationToken)
     {
         using var listener = NetworkHelper.CreateTcpListener(bindEndpoint);
@@ -35,7 +37,7 @@ public sealed class StcpProxyHandler : IProxyHandler
         while (!cancellationToken.IsCancellationRequested)
         {
             var socket = await listener.AcceptAsync(cancellationToken).ConfigureAwait(false);
-            _ = HandleVisitorClientAsync(socket, serverName, secretKey, visitorConnectionFactory, cancellationToken);
+            _ = HandleVisitorClientAsync(socket, serverName, secretKey, visitorConnectionFactory, runtime, cancellationToken);
         }
     }
 
@@ -44,6 +46,7 @@ public sealed class StcpProxyHandler : IProxyHandler
         string serverName,
         string secretKey,
         Func<string, string, CancellationToken, Task<Stream>> visitorConnectionFactory,
+        ProxyRuntimeTracker runtime,
         CancellationToken cancellationToken)
     {
         await using var clientStream = NetworkHelper.CreateNetworkStream(socket);
@@ -51,7 +54,7 @@ public sealed class StcpProxyHandler : IProxyHandler
         try
         {
             await using var workStream = await visitorConnectionFactory(serverName, secretKey, cancellationToken).ConfigureAwait(false);
-            await StreamRelay.RelayBidirectionalAsync(clientStream, workStream, cancellationToken).ConfigureAwait(false);
+            await TrafficRelay.BidirectionalAsync(runtime, $"visitor:{serverName}", clientStream, workStream, cancellationToken).ConfigureAwait(false);
         }
         catch
         {

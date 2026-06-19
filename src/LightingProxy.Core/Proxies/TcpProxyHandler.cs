@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using LightingProxy.Core.Abstractions;
+using LightingProxy.Core.Telemetry;
 using LightingProxy.Core.Transport;
 using LightingProxy.Domain.Client.Proxies;
 using LightingProxy.Domain.Enums;
@@ -31,7 +32,7 @@ public sealed class TcpProxyHandler : IProxyHandler
     public async Task HandleClientWorkConnectionAsync(ProxyDefinition definition, Stream workStream, IClientProxyContext context, CancellationToken cancellationToken = default)
     {
         await using var local = await OpenLocalStreamAsync(definition.Config, cancellationToken).ConfigureAwait(false);
-        await StreamRelay.RelayBidirectionalAsync(workStream, local, cancellationToken).ConfigureAwait(false);
+        await TrafficRelay.BidirectionalAsync(context.Runtime, definition.Name, workStream, local, cancellationToken).ConfigureAwait(false);
     }
 
     internal static async Task<Stream> OpenLocalStreamAsync(ProxyConfigBase config, CancellationToken cancellationToken)
@@ -47,7 +48,7 @@ public sealed class TcpProxyHandler : IProxyHandler
         try
         {
             await using var workStream = await context.WorkConnections.RequestWorkConnectionAsync(proxyName, cancellationToken: cancellationToken).ConfigureAwait(false);
-            await StreamRelay.RelayBidirectionalAsync(clientStream, workStream, cancellationToken).ConfigureAwait(false);
+            await TrafficRelay.BidirectionalAsync(context.Runtime, proxyName, clientStream, workStream, cancellationToken).ConfigureAwait(false);
         }
         catch
         {

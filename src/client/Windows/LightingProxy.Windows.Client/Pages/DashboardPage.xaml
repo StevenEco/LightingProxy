@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="LightingProxy.Windows.Client.Pages.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="16" MaxWidth="960">
+            <TextBlock Text="隧道概览" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{x:Bind ViewModel.StatusTitle, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" />
+                    <TextBlock Text="{x:Bind ViewModel.StatusSubtitle, Mode=OneWay}" Opacity="0.8" TextWrapping="WrapWholeWords" />
+                    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,12,0,0">
+                        <Button Content="启动隧道" Click="Start_Click" />
+                        <Button Content="停止隧道" Click="Stop_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="在线时长" Opacity="0.7" />
+                        <TextBlock Text="{x:Bind ViewModel.UptimeText, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="上行速率" Opacity="0.7" />
+                        <TextBlock Text="{x:Bind ViewModel.OutboundSpeedText, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="下行速率" Opacity="0.7" />
+                        <TextBlock Text="{x:Bind ViewModel.InboundSpeedText, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="3" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="累计流量" Opacity="0.7" />
+                        <TextBlock Text="{x:Bind ViewModel.TotalTrafficText, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock Text="最近心跳" Opacity="0.7" />
+            <TextBlock Text="{x:Bind ViewModel.HeartbeatText, Mode=OneWay}" />
+
+            <TextBlock Text="通道流量" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,8,0,0" />
+            <ListView ItemsSource="{x:Bind ViewModel.Tunnels, Mode=OneWay}" SelectionMode="None">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:TunnelTrafficItem" xmlns:viewmodels="using:LightingProxy.Windows.Shared.ViewModels">
+                        <Grid Padding="8" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="3*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{x:Bind Name}" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1" Text="{x:Bind Detail}" Opacity="0.85" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
